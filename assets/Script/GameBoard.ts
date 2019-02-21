@@ -1,5 +1,6 @@
 import { GameScene } from "./GameScene";
 import { BLACKCHESS, WHITECHESS, NONE } from "./Piece";
+import {AI} from "./AI";
 
 const { ccclass, property } = cc._decorator;
 
@@ -19,6 +20,9 @@ export class GameBoard extends cc.Component {
     //胜利方，-1未结束,0平局，1黑胜，2白胜
     public win: number = -1;
     private sum: number = 0;
+    private AITurn: AI = null;
+    //一格长度
+    public block: number = 50;
 
     /**
      * 初始化
@@ -26,6 +30,7 @@ export class GameBoard extends cc.Component {
      */
     public init(scene: GameScene): void {
         this.gameScene = scene;
+
         for (let i = 0; i < this.judgeSize; i++) {
             this.maze[i] = [];
             for (let j = 0; j < this.judgeSize; j++) {
@@ -34,6 +39,10 @@ export class GameBoard extends cc.Component {
             }
         }
         this.addListenner();
+    }
+
+    public initAI (ai: AI): void {
+        this.AITurn = ai;
     }
 
     /**
@@ -49,6 +58,15 @@ export class GameBoard extends cc.Component {
         posX = this.getPosByInt(posX);
         posY = this.getPosByInt(posY);
         this.changeToJudgeBoard(posX, posY);
+
+        //如果AI模式启动，电脑走下一轮 
+        this.scheduleOnce(function() {
+            if (this.gameScene.AIMODE && this.win == -1) {
+                let AIPOS: cc.Vec2 = this.AITurn.AIPosition(posX, posY);
+                console.log(AIPOS);
+                this.changeToJudgeBoard(AIPOS.x, AIPOS.y);
+            }
+        }, 0.2);
     }
 
     /**
@@ -64,10 +82,10 @@ export class GameBoard extends cc.Component {
         } else {
             flag = 1;
         }
-        let remain = num % 50;
-        num = Math.floor(num / 50) * 50;
-        if (remain - 25 >= 0) {
-            num += 50;
+        let remain = num % this.block;
+        num = Math.floor(num / this.block) * this.block;
+        if (remain - this.block / 2 >= 0) {
+            num += this.block;
         }
         num *= flag;
         return num;
@@ -79,8 +97,8 @@ export class GameBoard extends cc.Component {
      * @param y 
      */
     private changeToJudgeBoard(x: number, y: number): void {
-        let tx = (x / 50) + 8;
-        let ty = (y / 50) + 8;
+        let tx = (x / this.block) + 8;
+        let ty = (y / this.block) + 8;
         if (this.maze[tx][ty] != 0) {
             return;
         } else {
@@ -184,7 +202,7 @@ export class GameBoard extends cc.Component {
             cc.log("未结束");
         }
 
-        cc.log(this.sum);
+        cc.log("落子数：" + this.sum);
 
     }
 

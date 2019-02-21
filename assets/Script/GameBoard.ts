@@ -1,12 +1,10 @@
 import { GameScene } from "./GameScene";
+import { BLACKCHESS, WHITECHESS, NONE } from "./Piece";
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export class GameBoard extends cc.Component {
-
-    @property(cc.Label)
-    label: cc.Label = null;
 
     // private startX: number = 0;
     // private startY: number = 0;
@@ -14,12 +12,13 @@ export class GameBoard extends cc.Component {
     //判定棋盘大小
     private judgeSize: number = 25;
     //判定棋盘
-    private maze: number[][];
+    private maze: number[][] = [];
     private gameScene: GameScene = null;
     //下一个棋子颜色（-1为黑）
-    private state: number = -1;
-    //胜利方，0平局，1黑胜，2白胜
-    private win: number = 0;
+    public state: number = BLACKCHESS;
+    //胜利方，-1未结束,0平局，1黑胜，2白胜
+    public win: number = -1;
+    private sum: number = 0;
 
     /**
      * 初始化
@@ -28,10 +27,13 @@ export class GameBoard extends cc.Component {
     public init(scene: GameScene): void {
         this.gameScene = scene;
         for (let i = 0; i < this.judgeSize; i++) {
+            this.maze[i] = [];
             for (let j = 0; j < this.judgeSize; j++) {
+                //console.log(i + "," + j);
                 this.maze[i][j] = 0;
             }
         }
+        this.addListenner();
     }
 
     /**
@@ -42,8 +44,8 @@ export class GameBoard extends cc.Component {
         // let localPosition = this.node.convertToNodeSpaceAR(event.getLocation());
         // let pos = this.getPosByInt(localPosition);
         let localPosition = event.getLocation();
-        let posX = localPosition.x;
-        let posY = localPosition.y;
+        let posX = localPosition.x - 350;
+        let posY = localPosition.y - 350;
         posX = this.getPosByInt(posX);
         posY = this.getPosByInt(posY);
         this.changeToJudgeBoard(posX, posY);
@@ -72,7 +74,7 @@ export class GameBoard extends cc.Component {
     }
 
     /**
-     * 转换坐标后置入判定棋盘
+     * 转换坐标后置入判定棋盘,并且落子
      * @param x 
      * @param y 
      */
@@ -83,6 +85,9 @@ export class GameBoard extends cc.Component {
             return;
         } else {
             this.maze[tx][ty] = this.state;
+            this.sum += 1;
+            this.judge(tx, ty);
+            this.gameScene.MoveInChess(x, y, this.state);
             this.state *= -1;
         }
     }
@@ -92,7 +97,7 @@ export class GameBoard extends cc.Component {
      * @param tx 
      * @param ty 
      */
-    private judge(tx: number, ty: number): void {
+    public judge(tx: number, ty: number): void {
 
         //棋子判定累加计数器(5或者-5出现胜负)
         let rowSum = 0;
@@ -114,14 +119,14 @@ export class GameBoard extends cc.Component {
                     colSum = 0;
                     colSum += this.maze[i][j];
                 }
-
+                //横轴判定
                 if (this.maze[j - 1][i] == this.maze[j][i]) {
                     rowSum += this.maze[j][i];
                 } else {
                     rowSum = 0;
                     rowSum += this.maze[j][i];
                 }
-
+                //顺斜轴判定
                 if ((tx - ty) == (i - j)) {
                     if (this.maze[i - 1][j - 1] == this.maze[i][j]) {
                         biasSumA += this.maze[i][j];
@@ -130,7 +135,7 @@ export class GameBoard extends cc.Component {
                         biasSumA += this.maze[i][j];
                     }
                 }
-
+                //逆斜轴判定
                 if ((tx + ty) == (i + j)) {
                     if (this.maze[i - 1][j + 1] == this.maze[i][j]) {
                         biasSumB += this.maze[i][j];
@@ -170,17 +175,24 @@ export class GameBoard extends cc.Component {
             this.win = 2;
             cc.log("黑胜！");
             //this.winString = "黑棋获胜！";
-        } else {
-            //平局或未结束
+        } else if (this.sum >= 225){
+            //平局
             this.win = 0;
-            cc.log("平局或未结束！");
+            cc.log("平局！");
+        } else {
+            this.win = -1;
+            cc.log("未结束");
         }
 
-        //cc.log(this.sum);
+        cc.log(this.sum);
 
     }
 
     private addListenner(): void {
         this.node.on(cc.Node.EventType.TOUCH_END, this.onTouched, this);
+    }
+
+    public removeListennner(): void {
+        this.node.off(cc.Node.EventType.TOUCH_END, this.onTouched, this);
     }
 }

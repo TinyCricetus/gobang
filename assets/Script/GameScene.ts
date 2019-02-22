@@ -25,6 +25,8 @@ export class GameScene extends cc.Component {
     private board: GameBoard = null;
     private overTips: string = "";
     public AIMODE: boolean = false;
+    @property(cc.Sprite)
+    resistEvent: cc.Sprite = null;
 
     public onLoad (): void {
         this.board.init(this);
@@ -91,6 +93,7 @@ export class GameScene extends cc.Component {
         console.log(this.AIMODE);
         this.button.node.active = false;
         this.buttonAI.node.active = false;
+        this.resistEvent.node.active =false;
     }
 
     private reset (): void {

@@ -1,6 +1,6 @@
 import { GameScene } from "./GameScene";
 import { BLACKCHESS, WHITECHESS, NONE } from "./Piece";
-import {AI} from "./AI";
+import { AI } from "./AI";
 
 const { ccclass, property } = cc._decorator;
 
@@ -11,22 +11,22 @@ export class GameBoard extends cc.Component {
     // private startY: number = 0;
 
     //判定棋盘大小
-    private judgeSize: number = 25;
+    public judgeSize: number = 16;
     //判定棋盘
-    private maze: number[][] = [];
+    public maze: number[][] = [];
     private gameScene: GameScene = null;
     //下一个棋子颜色（-1为黑）
     public state: number = BLACKCHESS;
     //胜利方，-1未结束,0平局，1黑胜，2白胜
     public win: number = -1;
-    private sum: number = 0;
+    public sum: number = 0;
     private AITurn: AI = null;
     //一格长度
     public block: number = 50;
 
     /**
      * 初始化
-     * @param scene 
+     * @param scene 游戏场景
      */
     public init(scene: GameScene): void {
         this.gameScene = scene;
@@ -41,13 +41,13 @@ export class GameBoard extends cc.Component {
         this.addListenner();
     }
 
-    public initAI (ai: AI): void {
+    public initAI(ai: AI): void {
         this.AITurn = ai;
     }
 
     /**
      * 处理触控事件
-     * @param event 
+     * @param event 触控事件
      */
     private onTouched(event: cc.Event.EventTouch) {
         // let localPosition = this.node.convertToNodeSpaceAR(event.getLocation());
@@ -60,18 +60,20 @@ export class GameBoard extends cc.Component {
         this.changeToJudgeBoard(posX, posY);
 
         //如果AI模式启动，电脑走下一轮 
-        this.scheduleOnce(function() {
-            if (this.gameScene.AIMODE && this.win == -1) {
-                let AIPOS: cc.Vec2 = this.AITurn.AIPosition(posX, posY);
-                console.log(AIPOS);
+        if (this.gameScene.AIMODE && this.win == -1) {
+            let AIPOS: cc.Vec2 = this.AITurn.AIPosition(posX, posY);
+            //console.log(AIPOS);
+            this.scheduleOnce(function () {
                 this.changeToJudgeBoard(AIPOS.x, AIPOS.y);
-            }
-        }, 0.2);
+            }, 0.2);
+        }
+
+        //this.printBoard();
     }
 
     /**
      * 世界坐标转换,并且取整（四舍五入）
-     * @param num 
+     * @param num X或者Y轴坐标
      */
     private getPosByInt(num: number): number {
         //负坐标处理标记，使得处理出来的数据保持原符号不变
@@ -193,7 +195,7 @@ export class GameBoard extends cc.Component {
             this.win = 2;
             cc.log("黑胜！");
             //this.winString = "黑棋获胜！";
-        } else if (this.sum >= 225){
+        } else if (this.sum >= 225) {
             //平局
             this.win = 0;
             cc.log("平局！");
@@ -212,5 +214,14 @@ export class GameBoard extends cc.Component {
 
     public removeListennner(): void {
         this.node.off(cc.Node.EventType.TOUCH_END, this.onTouched, this);
+    }
+
+    private printBoard(): void {
+        for (let i = 1; i < this.judgeSize; i++) {
+            for (let j = 1; j < this.judgeSize; j++) {
+                cc.log(this.maze[i][j] + " ");
+            }
+            cc.log("\n");
+        }
     }
 }

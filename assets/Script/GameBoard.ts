@@ -23,6 +23,8 @@ export class GameBoard extends cc.Component {
     private AITurn: AI = null;
     //一格长度
     public block: number = 50;
+    //AI模式下的全局回合判定
+    private myTurn: boolean = true;
 
     /**
      * 初始化
@@ -60,7 +62,7 @@ export class GameBoard extends cc.Component {
         this.changeToJudgeBoard(posX, posY);
 
         //如果AI模式启动，电脑走下一轮 
-        if (this.gameScene.AIMODE && this.win == -1) {
+        if (this.gameScene.AIMODE && this.win == -1 && !this.myTurn) {
             let AIPOS: cc.Vec2 = this.AITurn.AIPosition(posX, posY);
             //console.log(AIPOS);
             this.scheduleOnce(function () {
@@ -102,8 +104,10 @@ export class GameBoard extends cc.Component {
         let tx = (x / this.block) + 8;
         let ty = (y / this.block) + 8;
         if (this.maze[tx][ty] != 0) {
+            this.myTurn = true;
             return;
         } else {
+            this.myTurn = false;
             this.maze[tx][ty] = this.state;
             this.sum += 1;
             this.judge(tx, ty);

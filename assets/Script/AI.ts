@@ -12,6 +12,9 @@ export class AI extends cc.Component {
 
     //优势记分棋盘
     private mazeScore: number[][] = [];
+    //最新更新的点，用于威胁快速判断
+    private newX: number;
+    private newY: number;
 
 
     public onLoad(): void {
@@ -36,8 +39,15 @@ export class AI extends cc.Component {
      */
     public AIPosition(x: number, y: number): cc.Vec2 {
         x = (x / this.board.block) + 8;
-        y = (y / this.board.block) + 8
-        this.figureScore(x, y);
+        y = (y / this.board.block) + 8;
+        this.newX = x;
+        this.newY = y;
+        //计算黑棋威胁
+        this.figureScore(x, y, 1);
+        //威胁分数转正
+        this.scoreToPositive();
+        //计算白棋威胁
+        this.figureScore(x, y, -1);
 
         let figurePos: cc.Vec2 = this.figureOut();
         x = figurePos.x;
@@ -46,9 +56,9 @@ export class AI extends cc.Component {
     }
 
     /**
-     * 扫描棋盘
+     * 扫描棋盘，计算威胁得分
      */
-    private figureScore(tx: number, ty: number): void {
+    private figureScore(tx: number, ty: number, state: number): void {
         
         let sum: number = 0;
 
@@ -60,13 +70,13 @@ export class AI extends cc.Component {
             temp[i] = this.board.maze[tx][i];
         }
         for (let i = 1; i < length; i++) {
-            if (temp[i] == -1) {
-                if (temp[i - 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i - 1] * state < 0) {
                     temp[i] += temp[i - 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i - 1] < 0) {
+                if (temp[i - 1] * state < 0) {
                     this.mazeScore[tx][i] += temp[i - 1];
                 }
             }
@@ -76,13 +86,13 @@ export class AI extends cc.Component {
             temp[i] = this.board.maze[tx][i];
         }
         for (let i = length - 1; i > 0; i--) {
-            if (temp[i] == -1) {
-                if (temp[i + 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i + 1] * state < 0) {
                     temp[i] += temp[i + 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i + 1] < 0) {
+                if (temp[i + 1] * state < 0) {
                     this.mazeScore[tx][i] += temp[i + 1];
                 }
             }
@@ -93,13 +103,13 @@ export class AI extends cc.Component {
             temp[i] = this.board.maze[i][ty];
         }
         for (let i = 1; i < length; i++) {
-            if (temp[i] == -1) {
-                if (temp[i - 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i - 1] * state < 0) {
                     temp[i] += temp[i - 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i - 1] < 0) {
+                if (temp[i - 1] * state < 0) {
                     this.mazeScore[i][ty] += temp[i - 1];
                 }
             }
@@ -109,13 +119,13 @@ export class AI extends cc.Component {
             temp[i] = this.board.maze[i][ty];
         }
         for (let i = length - 1; i > 0; i--) {
-            if (temp[i] == -1) {
-                if (temp[i + 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i + 1] * state < 0) {
                     temp[i] += temp[i + 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i + 1] < 0) {
+                if (temp[i + 1] * state < 0) {
                     this.mazeScore[i][ty] += temp[i + 1];
                 }
             }
@@ -139,13 +149,13 @@ export class AI extends cc.Component {
         beginX = endX - (index - 2);
         beginY = endY + (index - 2);
         for (let i = 1; i < index; i++) {
-            if (temp[i] == -1) {
-                if (temp[i - 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i - 1] * state < 0) {
                     temp[i] += temp[i - 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i - 1] < 0) {
+                if (temp[i - 1] * state < 0) {
                     this.mazeScore[beginX + (i - 1)][beginY - (i - 1)] += temp[i - 1];
                 }
             }
@@ -165,13 +175,13 @@ export class AI extends cc.Component {
         beginY = endY;
         let it: number = 1;
         for (let i = index - 1; i > 0; i--, it++) {
-            if (temp[i] == -1) {
-                if (temp[i + 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i + 1] * state < 0) {
                     temp[i] += temp[i + 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i + 1] < 0) {
+                if (temp[i + 1] * state < 0) {
                     this.mazeScore[beginX - (it - 1)][beginY + (it - 1)] += temp[i + 1];
                 }
             }
@@ -191,13 +201,13 @@ export class AI extends cc.Component {
         beginX = endX - (index - 2);
         beginY = endY - (index - 2);
         for (let i = 1; i < index; i++) {
-            if (temp[i] == -1) {
-                if (temp[i - 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i - 1] * state < 0) {
                     temp[i] += temp[i - 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i - 1] < 0) {
+                if (temp[i - 1] * state < 0) {
                     this.mazeScore[beginX + (i - 1)][beginY + (i - 1)] += temp[i - 1];
                 }
             }
@@ -217,13 +227,13 @@ export class AI extends cc.Component {
         beginX = endX;
         beginY = endY;
         for (let i = index - 1; i > 0; i--, it++) {
-            if (temp[i] == -1) {
-                if (temp[i + 1] < 0) {
+            if (temp[i] * state == -1) {
+                if (temp[i + 1] * state < 0) {
                     temp[i] += temp[i + 1];
                 }
             }
             if (temp[i] == 0) {
-                if (temp[i + 1] < 0) {
+                if (temp[i + 1] * state < 0) {
                     this.mazeScore[beginX - (it - 1)][beginY - (it - 1)] += temp[i + 1];
                 }
             }
@@ -231,15 +241,49 @@ export class AI extends cc.Component {
 
     }
 
+    /**
+     * 威胁分数转正
+     */
+    private scoreToPositive (): void {
+        let length: number = this.board.judgeSize;
+        for (let i = 1; i < length; i++) {
+            for (let j = 1; j < length; j++) {
+                if (this.mazeScore[i][j] < 0) {
+                    this.mazeScore[i][j] *= -1;
+                }
+            }
+        }
+    }
+
+    /**
+     * 计算威胁最大坐标
+     */
     private figureOut (): cc.Vec2 {
         let length: number = this.board.judgeSize;
         let score: number = 0;
         let x: number = 0;
         let y: number = 0;
+        
+        //优先计算最近点的威胁
+        for (let i = this.newX - 1; i < this.newX + 3; i++) {
+            for (let j = this.newY - 1; j < this.newY + 3; j++) {
+                if (this.board.maze[i][j] == 0) {
+                    if (score < this.mazeScore[i][j]) {
+                        x = i;
+                        y = j;
+                        score = this.mazeScore[i][j];
+                    }
+                }   
+            }
+        }
+        if (score >= 4) {
+            return cc.v2(x, y);
+        }
+
         for (let i = 1; i < length; i++) {
             for (let j = 1; j < length; j++) {
                 if (this.board.maze[i][j] == 0) {
-                    if (score > this.mazeScore[i][j] ) {
+                    if (score < this.mazeScore[i][j] ) {
                         x = i;
                         y = j;
                         score = this.mazeScore[i][j];

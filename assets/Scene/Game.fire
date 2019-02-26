@@ -834,11 +834,11 @@
     "blackChess": {
       "__uuid__": "a321604e-369e-414e-b556-fd816261feb2"
     },
-    "board": {
-      "__id__": 5
-    },
     "resistEvent": {
       "__id__": 8
+    },
+    "board": {
+      "__id__": 5
     }
   },
   {

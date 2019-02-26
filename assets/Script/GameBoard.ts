@@ -7,22 +7,20 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export class GameBoard extends cc.Component {
 
-    // private startX: number = 0;
-    // private startY: number = 0;
-
     //判定棋盘大小
     public judgeSize: number = 16;
     //判定棋盘
     public maze: number[][] = [];
-    private gameScene: GameScene = null;
     //下一个棋子颜色（-1为黑）
     public state: number = BLACKCHESS;
     //胜利方，-1未结束,0平局，1黑胜，2白胜
     public win: number = -1;
     public sum: number = 0;
-    private AITurn: AI = null;
     //一格长度
     public block: number = 50;
+
+    private gameScene: GameScene = null;
+    private AITurn: AI = null;
     //AI模式下的全局回合判定
     private myTurn: boolean = true;
 
@@ -32,7 +30,6 @@ export class GameBoard extends cc.Component {
      */
     public init(scene: GameScene): void {
         this.gameScene = scene;
-
         for (let i = 0; i < this.judgeSize; i++) {
             this.maze[i] = [];
             for (let j = 0; j < this.judgeSize; j++) {
@@ -111,7 +108,7 @@ export class GameBoard extends cc.Component {
             this.maze[tx][ty] = this.state;
             this.sum += 1;
             this.judge(tx, ty);
-            this.gameScene.MoveInChess(x, y, this.state);
+            this.gameScene.moveInChess(x, y, this.state);
             this.state *= -1;
         }
     }
@@ -212,7 +209,7 @@ export class GameBoard extends cc.Component {
 
     }
 
-    private addListenner(): void {
+    public addListenner(): void {
         this.node.on(cc.Node.EventType.TOUCH_END, this.onTouched, this);
     }
 

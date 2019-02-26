@@ -56,6 +56,41 @@ export class AI extends cc.Component {
     }
 
     /**
+     * 正面横扫计算分数
+     */
+    private figureScorePositive (temp: number[], i: number, state: number): number {
+        let score: number = 0;
+        if (temp[i] * state == -1) {
+            if (temp[i - 1] * state < 0) {
+                temp[i] += temp[i - 1];
+            }
+        }
+        if (temp[i] == 0) {
+            if (temp[i - 1] * state < 0) {
+                return temp[i - 1];
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 负面横扫计算分数
+     */
+    private figureScoreNagtive(temp: number[], i: number, state: number): number {
+        if (temp[i] * state == -1) {
+            if (temp[i + 1] * state < 0) {
+                temp[i] += temp[i + 1];
+            }
+        }
+        if (temp[i] == 0) {
+            if (temp[i + 1] * state < 0) {
+               return temp[i + 1];
+            }
+        }
+        return 0;
+    }
+
+    /**
      * 扫描棋盘，计算威胁得分
      */
     private figureScore(tx: number, ty: number, state: number): void {
@@ -70,32 +105,14 @@ export class AI extends cc.Component {
             temp[i] = this.board.maze[tx][i];
         }
         for (let i = 1; i < length; i++) {
-            if (temp[i] * state == -1) {
-                if (temp[i - 1] * state < 0) {
-                    temp[i] += temp[i - 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i - 1] * state < 0) {
-                    this.mazeScore[tx][i] += temp[i - 1];
-                }
-            }
+            this.mazeScore[tx][i] += this.figureScorePositive(temp, i, state);
         }
         //纵向负判断
         for (let i = 1; i < length; i++) {
             temp[i] = this.board.maze[tx][i];
         }
         for (let i = length - 1; i > 0; i--) {
-            if (temp[i] * state == -1) {
-                if (temp[i + 1] * state < 0) {
-                    temp[i] += temp[i + 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i + 1] * state < 0) {
-                    this.mazeScore[tx][i] += temp[i + 1];
-                }
-            }
+            this.mazeScore[tx][i] += this.figureScoreNagtive(temp, i, state);
         }
 
         //横向正判断
@@ -103,32 +120,14 @@ export class AI extends cc.Component {
             temp[i] = this.board.maze[i][ty];
         }
         for (let i = 1; i < length; i++) {
-            if (temp[i] * state == -1) {
-                if (temp[i - 1] * state < 0) {
-                    temp[i] += temp[i - 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i - 1] * state < 0) {
-                    this.mazeScore[i][ty] += temp[i - 1];
-                }
-            }
+            this.mazeScore[i][ty] += this.figureScorePositive(temp, i, state);
         }
         //横向负判断
         for (let i = 1; i < length; i++) {
             temp[i] = this.board.maze[i][ty];
         }
         for (let i = length - 1; i > 0; i--) {
-            if (temp[i] * state == -1) {
-                if (temp[i + 1] * state < 0) {
-                    temp[i] += temp[i + 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i + 1] * state < 0) {
-                    this.mazeScore[i][ty] += temp[i + 1];
-                }
-            }
+            this.mazeScore[i][ty] += this.figureScoreNagtive(temp, i, state);
         }
 
         let index: number = 1;
@@ -149,16 +148,8 @@ export class AI extends cc.Component {
         beginX = endX - (index - 2);
         beginY = endY + (index - 2);
         for (let i = 1; i < index; i++) {
-            if (temp[i] * state == -1) {
-                if (temp[i - 1] * state < 0) {
-                    temp[i] += temp[i - 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i - 1] * state < 0) {
-                    this.mazeScore[beginX + (i - 1)][beginY - (i - 1)] += temp[i - 1];
-                }
-            }
+            this.mazeScore[beginX + (i - 1)][beginY - (i - 1)] += this.figureScorePositive(temp,
+                i, state);
         }
         //顺斜角负判断
         index = 1;
@@ -175,16 +166,8 @@ export class AI extends cc.Component {
         beginY = endY;
         let it: number = 1;
         for (let i = index - 1; i > 0; i--, it++) {
-            if (temp[i] * state == -1) {
-                if (temp[i + 1] * state < 0) {
-                    temp[i] += temp[i + 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i + 1] * state < 0) {
-                    this.mazeScore[beginX - (it - 1)][beginY + (it - 1)] += temp[i + 1];
-                }
-            }
+            this.mazeScore[beginX - (it - 1)][beginY + (it - 1)] += this.figureScoreNagtive(temp,
+                i, state);
         }
 
         //逆斜角正判断
@@ -201,16 +184,8 @@ export class AI extends cc.Component {
         beginX = endX - (index - 2);
         beginY = endY - (index - 2);
         for (let i = 1; i < index; i++) {
-            if (temp[i] * state == -1) {
-                if (temp[i - 1] * state < 0) {
-                    temp[i] += temp[i - 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i - 1] * state < 0) {
-                    this.mazeScore[beginX + (i - 1)][beginY + (i - 1)] += temp[i - 1];
-                }
-            }
+            this.mazeScore[beginX + (i - 1)][beginY + (i - 1)] += this.figureScorePositive(temp,
+                i, state);
         }
         //逆斜角负判断
         index = 1;
@@ -227,18 +202,9 @@ export class AI extends cc.Component {
         beginX = endX;
         beginY = endY;
         for (let i = index - 1; i > 0; i--, it++) {
-            if (temp[i] * state == -1) {
-                if (temp[i + 1] * state < 0) {
-                    temp[i] += temp[i + 1];
-                }
-            }
-            if (temp[i] == 0) {
-                if (temp[i + 1] * state < 0) {
-                    this.mazeScore[beginX - (it - 1)][beginY - (it - 1)] += temp[i + 1];
-                }
-            }
+            this.mazeScore[beginX - (it - 1)][beginY - (it - 1)] += this.figureScoreNagtive(temp,
+                i, state);
         }
-
     }
 
     /**

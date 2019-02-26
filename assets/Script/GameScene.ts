@@ -21,13 +21,16 @@ export class GameScene extends cc.Component {
     whiteChess: cc.Prefab = null;
     @property(cc.Prefab)
     blackChess: cc.Prefab = null;
-    @property(GameBoard)
-    private board: GameBoard = null;
-    private overTips: string = "";
     public AIMODE: boolean = false;
     @property(cc.Sprite)
     resistEvent: cc.Sprite = null;
-
+    @property(GameBoard)
+    private board: GameBoard = null;
+    private overTips: string = "";
+    
+    /**
+     * 初始化
+     */
     public onLoad (): void {
         this.board.init(this);
     }
@@ -38,7 +41,7 @@ export class GameScene extends cc.Component {
      * @param x 
      * @param y 
      */
-    public MoveInChess (x: number, y: number, state: number): void {
+    public moveInChess (x: number, y: number, state: number): void {
         let chess;
         if (state == BLACKCHESS) {
             chess = cc.instantiate(this.blackChess);

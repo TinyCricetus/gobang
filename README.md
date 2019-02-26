@@ -1,2 +1,6 @@
-# hello-world
-Hello world new project template.
+这是一个小测试，我第一次编写人机对战程序，这代码也只是仅供参考，AI比较弱啦
+包括四个部分：
+1.棋盘场景
+2.逻辑控制
+3.棋子状态
+4.AI
